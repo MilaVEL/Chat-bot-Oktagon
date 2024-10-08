@@ -3,6 +3,33 @@ const TelegramBot = require('node-telegram-bot-api');
 
 // Create a bot that uses 'polling' to fetch new updates
 const bot = new TelegramBot(token, { polling: true });
+//Команды
+const commands = [
+
+    {
+
+        command: "start",
+        description: "Новый диалог"
+
+    },
+    {
+
+        command: "help",
+        description: "Помощь"
+
+    },
+    {
+        command: "site",
+        description: "Полезный сайт"
+
+    },
+    {
+        command: "creator",
+        description: "Авторы этого бота"
+
+    },
+]
+bot.setMyCommands(commands);
 
 bot.on('message', (msg) => {
     const chatId = msg.chat.id;
@@ -10,6 +37,19 @@ bot.on('message', (msg) => {
     // Проверяем, является ли это первым сообщением от пользователя
     if (msg.text === '/start') {
         bot.sendMessage(chatId, 'Привет, Октагон!');
+    }
+    else if (msg.text === '/help') {
+        bot.sendMessage(chatId, "Раздел помощи\n\n<b>help</b> - основные команды бота\n<b>site</b> - платформа, на которой ты получишь реальный опыт работы в IT\n<b>creator</b> - создатель данного телеграмм бота\n", {
+            parse_mode: "HTML"
+        });
+    }
+    else if (msg.text === '/site') {
+        bot.sendMessage(chatId, "<a href='https://students.forus.ru/'>Октагон</a>", {
+            parse_mode: "HTML"
+        });
+    }
+    else if (msg.text === '/creator') {
+        bot.sendMessage(chatId, 'Великанова Мила Евгеньевна');
     }
 });
 
