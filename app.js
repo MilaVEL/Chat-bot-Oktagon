@@ -1,12 +1,132 @@
-// подключение express
-const express = require("express");
-// создаем объект приложения
-const app = express();
-// определяем обработчик для маршрута "/"
-app.get("/", function (request, response) {
+const { connection, bot } = require('./token.js'); // Импортируем токен
 
-    // отправляем ответ
-    response.send("<h2>Привет, Октагон!</h2>");
+connection.connect(function (err) {
+    if (err) {
+        return console.error("Ошибка: " + err.message);
+    }
+    else {
+        console.log("Подключение к серверу MySQL успешно установлено");
+    }
 });
-// начинаем прослушивать подключения на 3000 порту
-app.listen(3000);
+
+//Команды
+const commands = [
+
+    {
+
+        command: "/start",
+        description: "Новый диалог"
+
+    },
+    {
+
+        command: "/help",
+        description: "Помощь"
+
+    },
+    {
+        command: "/site",
+        description: "Полезный сайт"
+
+    },
+    {
+        command: "/creator",
+        description: "Авторы этого бота"
+
+    },
+]
+bot.setMyCommands(commands);
+
+bot.on('message', (msg) => {
+    const chatId = msg.chat.id;
+
+    // Проверяем, является ли это первым сообщением от пользователя
+    if (msg.text === '/start') {
+        bot.sendMessage(chatId, 'Привет, Октагон!');
+    }
+    else if (msg.text === '/help') {
+        bot.sendMessage(chatId, "Раздел помощи\n\n<b>help</b> - основные команды бота\n<b>site</b> - платформа, на которой ты получишь реальный опыт работы в IT\n<b>creator</b> - создатель данного телеграмм бота\n\n<b>randomItem</b> - случайный объект из базы данных\n<b>deleteItem</b> - удалить объект из базы данных\n<b>getItemByID</b> - найти объект из базы данных\n", {
+            parse_mode: "HTML"
+        });
+    }
+    else if (msg.text === '/site') {
+        bot.sendMessage(chatId, `https://students.forus.ru/`, {
+            parse_mode: "HTML"
+        });
+    }
+    else if (msg.text === '/creator') {
+        bot.sendMessage(chatId, 'Великанова Мила Евгеньевна');
+    }
+    else if (msg.text === '/randomItem') {
+        connection.execute("SELECT * FROM items", function (error, results, fields) {
+            if (error) {
+                bot.sendMessage(chatId, "Ошибка при выполнении запроса");
+            } else {
+                max = results.length;
+                min = 1;
+                const index = Math.floor(Math.random() * (max - min + 1)) + min;
+                const item = results[index];
+                bot.sendMessage(chatId, `(${item.id}) - ${item.name}: ${item.descript}`);
+            }
+        });
+    }
+    //Чтобы удалить элемент нужно написать /deleteItem <ID>
+    else if (msg.text.includes('/deleteItem')) {
+        const id = parseInt(msg.text.split(' ')[1]); // Получаем ID элемента для удаления из команды
+        connection.execute("DELETE FROM items WHERE id=?", [id], function (error, results, fields) {
+            if (error) {
+                bot.sendMessage(chatId, "Ошибка при удалении элемента");
+            } else {
+                if (results.affectedRows > 0) {
+                    bot.sendMessage(chatId, "Удачно");
+                } else {
+                    bot.sendMessage(chatId, "Ошибка");
+                }
+            }
+        });
+    }
+    else if (msg.text.includes('/getItemByID')) {
+        const id = parseInt(msg.text.split(' ')[1]); // Получаем ID элемента для удаления из команды
+        connection.execute("SELECT * FROM items WHERE id=?", [id], function (error, results, fields) {
+            if (error) {
+                bot.sendMessage(chatId, "Ошибка при выполнении запроса");
+            } else {
+                if (results && results.length === 1) {
+                    const item = results[0];
+                    bot.sendMessage(chatId, `(${item.id}) - ${item.name}: ${item.descript}`);
+                }
+            }
+        });
+    }
+
+});
+
+//QR-код
+bot.onText(/^\!qr/, function (msg) {
+    console.log(msg);
+    var userId = msg.from.id;
+    var data = msg.text.substring(3).trim();
+    var imageqr = "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=" + data;
+    bot.sendMessage(msg.chat.id, "[✏️](" + imageqr + ")Qr code de: " + data, { parse_mode: "Markdown" });
+});
+//Скриншот сайта
+bot.onText(/^\!webscr/, function (msg) {
+    console.log(msg);
+    var url = msg.text.substring(8).trim();
+    var image = "https://api.letsvalidate.com/v1/thumbs/?url=" + url + "&width=1280&height=720";
+
+    var options = {
+        parse_mode: "Markdown",
+    };
+    bot.sendMessage(msg.chat.id, "[📷](" + image + ") Скриншот из сайта: " + url, options);
+});
+
+
+// Matches "/echo [whatever]"
+bot.onText(/\/echo (.+)/, (msg, match) => {
+
+    const chatId = msg.chat.id;
+    const resp = match[1]; // the captured "whatever"
+
+    bot.sendMessage(chatId, resp);
+});
