@@ -1,8 +1,11 @@
 {
     "name": "helloapp",
+    "main": "app.js",
     "version": "1.0.0",
     "author": "Velikanova Mila",
     "dependencies": {
-      "express":"^4.18.2"
+        "express": "^4.18.2",
+        "mysql2": "^3.11.3",
+        "node-telegram-bot-api": "^0.66.0"
     }
-  }
+}
