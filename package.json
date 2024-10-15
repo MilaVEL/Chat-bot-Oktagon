@@ -1,8 +1,13 @@
 {
     "name": "helloapp",
+    "main": "app.js",
     "version": "1.0.0",
     "author": "Velikanova Mila",
     "dependencies": {
-      "express":"^4.18.2"
+        "cron": "^3.1.7",
+        "express": "^4.18.2",
+        "mysql2": "^3.11.3",
+        "node-telegram-bot-api": "^0.66.0",
+        "set-interval-async": "^3.0.3"
     }
-  }
+}
