@@ -15,19 +15,23 @@ app.get("/static", function (request, response) {
 });
 
 app.use("/dynamic", function (request, response) {
-    
-    const { a, b, c } = request.query;
-    if (typeof a !== 'number' || typeof b !== 'number' || typeof c !== 'number') {
-        response.send("<b>header: Error</b><p>Body: One or more parameters are not numbers.</p>");
-        return;
-    }
-    if (a <= 0 || b <= 0 || c <= 0) {
+    //const { a, b, c } = request.query;
+
+    //Переделывает массив
+    const params = ['a', 'b', 'c'].map(key => parseFloat(request.query[key]));
+
+    //Проверка наличия результата
+    //соответствует ли хотя бы один элемент массива условию
+    if(params.some(element => element === isNaN)){
+        
+    }else if (a <= 0 || b <= 0 || c <= 0) {
         response.send("<b>header: Error</b><p>Body: One or more parameters must be positive numbers.</p>");
         return;
+    }else{
+        const body = (params[0] * params[1] * params[2]) / 3;
+        response.send(`<b>header: Calculated</b><p>body: ${body}</p>`); 
     }
 
-    const body = (a * b * c) / 3;
-    response.send(`<b>header: Calculated</b><p>body: ${body}</p>`);
 });
 // начинаем прослушивать подключения на 3000 порту
 app.listen(3000);
